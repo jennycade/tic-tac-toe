@@ -6,14 +6,17 @@ const gameboard = (() => {
 
   // tie it to the DOM
   let cells = [];
-  for (i=0; i<gameboard.length; i++) {
-    // grab the cell for later use
-    const cell = document.getElementById(i.toString())
-    cells.push(cell);
-    // hook it up
-    cell.addEventListener('click', (e) => {
-      game.playMove(parseInt(e.target.id));
-    });
+
+  const startGame = () => {
+    for (i=0; i<gameboard.length; i++) {
+      // grab the cell for later use
+      const cell = document.getElementById(i.toString())
+      cells.push(cell);
+      // hook it up
+      cell.addEventListener('click', (e) => {
+        game.playMove(parseInt(e.target.id));
+      });
+    }
   }
 
   // functions go here
@@ -50,7 +53,7 @@ const gameboard = (() => {
     ];
     for (i=0; i<lines.length; i++) {
       if (lines[i] === 'XXX' || lines[i] === 'OOO') {
-        return lines[i][0];
+        return lines[i][0]; // TODO: return player display name
       }
     }
     if (gameboard.join('').length < 9) {
@@ -65,10 +68,11 @@ const gameboard = (() => {
   return {
     markSquare,
     checkForWinner,
+    startGame,
   };
 })();
 
-const Player = (name) => {
+const Player = (name, playerName) => {
   // functions go here
   const playMove = (square) => {
     return gameboard.markSquare(name, square);
@@ -76,23 +80,49 @@ const Player = (name) => {
   const getName = () => {
     return name;
   }
+  const getPlayerName = () => {
+    return playerName;
+  }
   return {
     playMove,
     getName,
+    getPlayerName,
   }; // public functions
 }
 
 const game = (() => {
-  const x = Player('X');
-  const o = Player('O');
+  let x = Player('X', 'Player 1');
+  let o = Player('O', 'Player 2');
 
+  let playing = false;
   let gameOver = false;
   let currentPlayer = x;
+
+  const playButton = document.getElementById('playButton');
+  playButton.addEventListener('click', () => {
+    startGame();
+  })
 
   const currentPlayerNode = document.getElementById('currentPlayer');
   const messageNode = document.getElementById('message');
   currentPlayerNode.textContent = currentPlayer.getName();
   
+  const startGame = () => {
+    // set names
+    let player1name = document.getElementById('player1').value;
+    let player2name = document.getElementById('player2').value;
+    if (player1name === player2name) {
+      player1name += ' (X)';
+      player2name += ' (O)';
+    }
+    // create players
+    x = Player('X', player1name);
+    o = Player('O', player2name);
+    console.log('Let\'s play!');
+
+    gameboard.startGame();
+    playing = true;
+  }
   
   const switchPlayer = () => {
     if (currentPlayer === x) {
@@ -114,7 +144,7 @@ const game = (() => {
         if (outcome === 'draw') {
           displayMessage('Game over. It\'s a draw.');
         } else {
-          displayMessage(`Game over. ${outcome} won.`)
+          displayMessage(`Game over. ${outcome === 'X' ? x.getPlayerName() : o.getPlayerName()} won.`)
         }
       }
     }
