@@ -2,15 +2,25 @@
 
 const gameboard = (() => {
   let gameboard = ['', '', '', '', '', '', '', '', ''];
-  let numRows = 3; // in case I want to expand it later
+  // let numRows = 3; // in case I want to expand it later
+
+  // tie it to the DOM
+  let cells = [];
+  for (i=0; i<gameboard.length; i++) {
+    // grab the cell for later use
+    const cell = document.getElementById(i.toString())
+    cells.push(cell);
+    // hook it up
+    cell.addEventListener('click', (e) => {
+      game.playMove(parseInt(e.target.id));
+    });
+  }
 
   // functions go here
   const renderGameboard = () => {
     for (i=0; i<gameboard.length; i++) {
-      // grab the cell
-      const cell = document.getElementById(i.toString());
       // set text to value in gameboard
-      cell.textContent = gameboard[i];
+      cells[i].textContent = gameboard[i];
     }
   }
 
@@ -30,7 +40,7 @@ const gameboard = (() => {
     // TODO (maybe): also check for draw before board is filled
     const lines = [
       gameboard[0] + gameboard[1] + gameboard[2],
-      gameboard[0] + gameboard[4] + gameboard[5],
+      gameboard[0] + gameboard[4] + gameboard[8],
       gameboard[0] + gameboard[3] + gameboard[6],
       gameboard[3] + gameboard[4] + gameboard[5],
       gameboard[6] + gameboard[4] + gameboard[2],
@@ -60,7 +70,7 @@ const gameboard = (() => {
 
 const Player = (name) => {
   // functions go here
-  const playMove = (square) => { // this doesn't even get used!
+  const playMove = (square) => {
     return gameboard.markSquare(name, square);
   }
   const getName = () => {
@@ -76,25 +86,27 @@ const game = (() => {
   const x = Player('X');
   const o = Player('O');
 
-  const gameOver = false;
-
-  const messageNode = document.getElementById('message');
-
+  let gameOver = false;
   let currentPlayer = x;
+
+  const currentPlayerNode = document.getElementById('currentPlayer');
+  const messageNode = document.getElementById('message');
+  currentPlayerNode.textContent = currentPlayer.getName();
   
-  // functions go here
+  
   const switchPlayer = () => {
     if (currentPlayer === x) {
       currentPlayer = o;
     } else {
       currentPlayer = x;
     }
+    currentPlayerNode.textContent = currentPlayer.getName();
   }
 
   const playMove = (square) => {
     let playedMove;
     if (!gameOver) {
-      playedMove = gameboard.markSquare(currentPlayer.getName(), square);
+      playedMove = currentPlayer.playMove(square);
 
       const outcome = gameboard.checkForWinner();
       if (outcome) {
