@@ -1,0 +1,14 @@
+#gameboard {
+  margin: 0 auto;
+}
+.gameCell {
+  float: left;
+  width: 5em;
+  height: 5em;
+  border: 1px solid black;
+  text-align: center;
+  vertical-align: middle;
+}
+.newRow {
+  clear: left;
+}
