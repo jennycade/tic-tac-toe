@@ -2,12 +2,12 @@
 
 const gameboard = (() => {
   let gameboard = ['', '', '', '', '', '', '', '', ''];
-  // let numRows = 3; // in case I want to expand it later
 
   // tie it to the DOM
   let cells = [];
 
   const startGame = () => {
+    console.log('Starting game (gameboard).');
     for (i=0; i<gameboard.length; i++) {
       // grab the cell for later use
       const cell = document.getElementById(i.toString())
@@ -18,8 +18,12 @@ const gameboard = (() => {
       });
     }
   }
+  const resetGame = () => {
+    console.log('Resetting game (gameboard)');
+    gameboard = ['', '', '', '', '', '', '', '', '']; // this is going through to render but not markSquare. I'm missing something about scope here.
+    renderGameboard();
+  }
 
-  // functions go here
   const renderGameboard = () => {
     for (i=0; i<gameboard.length; i++) {
       // set text to value in gameboard
@@ -28,6 +32,7 @@ const gameboard = (() => {
   }
 
   const markSquare = (player, square) => {
+    console.log(`Marking square ${square} (gameboard)`);
     // check to make sure it's not already marked
     if (gameboard[square] === '') {
       gameboard[square] = player;
@@ -40,6 +45,7 @@ const gameboard = (() => {
   }
 
   const checkForWinner = () => {
+    console.log('Checking for winner (gameboard)');
     // TODO (maybe): also check for draw before board is filled
     const lines = [
       gameboard[0] + gameboard[1] + gameboard[2],
@@ -53,6 +59,7 @@ const gameboard = (() => {
     ];
     for (i=0; i<lines.length; i++) {
       if (lines[i] === 'XXX' || lines[i] === 'OOO') {
+        console.log('We have a winner!');
         return lines[i][0]; // TODO: return player display name
       }
     }
@@ -66,15 +73,18 @@ const gameboard = (() => {
 
 
   return {
+    gameboard, // for debugging, delete later
     markSquare,
     checkForWinner,
     startGame,
+    resetGame,
   };
 })();
 
 const Player = (name, playerName) => {
   // functions go here
   const playMove = (square) => {
+    console.log('Playing move (player)');
     return gameboard.markSquare(name, square);
   }
   const getName = () => {
@@ -91,12 +101,10 @@ const Player = (name, playerName) => {
 }
 
 const game = (() => {
-  let x = Player('X', 'Player 1');
-  let o = Player('O', 'Player 2');
+  let x;
+  let o;
 
   let playing = false;
-  let gameOver = false;
-  let currentPlayer = x;
 
   const playButton = document.getElementById('playButton');
   playButton.addEventListener('click', () => {
@@ -105,9 +113,9 @@ const game = (() => {
 
   const currentPlayerNode = document.getElementById('currentPlayer');
   const messageNode = document.getElementById('message');
-  currentPlayerNode.textContent = currentPlayer.getName();
   
   const startGame = () => {
+    console.log('Starting game (game).');
     // set names
     let player1name = document.getElementById('player1').value;
     let player2name = document.getElementById('player2').value;
@@ -118,13 +126,35 @@ const game = (() => {
     // create players
     x = Player('X', player1name);
     o = Player('O', player2name);
-    console.log('Let\'s play!');
+    // who's first?
+    currentPlayer = x;
+    currentPlayerNode.textContent = currentPlayer.getName();
 
     gameboard.startGame();
+    togglePlayButton('reset');
     playing = true;
+  }
+
+  const resetGame = () => {
+    // cheater way: just refresh the page
+    console.log('Resetting the game');
+    gameboard.resetGame();
+    togglePlayButton('play');
+  }
+
+  const togglePlayButton = (changeTo) => {
+    if (changeTo === 'reset') {
+      playButton.textContent = 'Reset';
+      playButton.addEventListener('click', resetGame);
+      // TODO: actually reset the game
+    } else if (changeTo === 'play') {
+      playButton.textContent = 'Play';
+      playButton.addEventListener('click', startGame);
+    }
   }
   
   const switchPlayer = () => {
+    console.log('Switching player (game)');
     if (currentPlayer === x) {
       currentPlayer = o;
     } else {
@@ -134,18 +164,16 @@ const game = (() => {
   }
 
   const playMove = (square) => {
+    console.log('Playing move (game)');
     let playedMove;
-    if (!gameOver) {
+    displayMessage('');
+    if (playing) {
       playedMove = currentPlayer.playMove(square);
 
       const outcome = gameboard.checkForWinner();
       if (outcome) {
-        gameOver = true;
-        if (outcome === 'draw') {
-          displayMessage('Game over. It\'s a draw.');
-        } else {
-          displayMessage(`Game over. ${outcome === 'X' ? x.getPlayerName() : o.getPlayerName()} won.`)
-        }
+        playing = false;
+        endGame(outcome);
       }
     }
     if (playedMove) {
@@ -155,7 +183,18 @@ const game = (() => {
   }
   const displayMessage = (message) => {
     messageNode.textContent = message;
-  } 
+  }
+
+  const endGame = (outcome) => {
+    message = 'Game over. '
+    if (outcome === 'draw') {
+      message += 'It\'s a draw.';
+    } else {
+      message += `${outcome === 'X' ? x.getPlayerName() : o.getPlayerName()} won.`;
+    }
+    displayMessage(message);
+
+  }
 
   return {
     playMove,
