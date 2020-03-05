@@ -108,6 +108,8 @@ const Player = (name, playerName) => {
 }
 
 const RandomAIPlayer = (name, playerName) => {
+  // TODO: make the player play on its own, not only when a square is clicked.
+  // is making a new Player for each function the best thing? Or can I use Object.assign() but still overwrite playMove()? 
   const {getName} = Player(name, playerName);
   const {getPlayerName} = Player(name, playerName);
   const playMove = () => {
@@ -117,7 +119,8 @@ const RandomAIPlayer = (name, playerName) => {
       square = Math.floor(Math.random()*9);
       if (gameboard.getSquareOpen(square)) {
         // play it
-        setTimeout(Player(name, playerName).playMove(square), 2000);
+        playedMove = setTimeout(Player(name, playerName).playMove(square), 2000);
+        return playedMove;
       }
     }
   }
@@ -153,7 +156,8 @@ const game = (() => {
     }
     // create players
     x = Player('X', player1name);
-    o = Player('O', player2name);
+    // o = Player('O', player2name);
+    o = RandomAIPlayer('O', player2name);
     // who's first?
     currentPlayer = x;
     currentPlayerNode.textContent = currentPlayer.getName();
