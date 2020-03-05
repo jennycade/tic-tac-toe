@@ -5,18 +5,19 @@ const gameboard = (() => {
 
   // tie it to the DOM
   let cells = [];
+  for (i=0; i<gameboard.length; i++) {
+    // grab the cell for later use
+    const cell = document.getElementById(i.toString())
+    cells.push(cell);
+    // hook it up
+    cell.addEventListener('click', (e) => {
+      game.playMove(parseInt(e.target.id));
+    });
+  }
 
   const startGame = () => {
     console.log('Starting game (gameboard).');
-    for (i=0; i<gameboard.length; i++) {
-      // grab the cell for later use
-      const cell = document.getElementById(i.toString())
-      cells.push(cell);
-      // hook it up
-      cell.addEventListener('click', (e) => {
-        game.playMove(parseInt(e.target.id));
-      });
-    }
+    
   }
   const resetGame = () => {
     console.log('Resetting game (gameboard)');
@@ -60,6 +61,7 @@ const gameboard = (() => {
     for (i=0; i<lines.length; i++) {
       if (lines[i] === 'XXX' || lines[i] === 'OOO') {
         console.log('We have a winner!');
+        console.log(lines[i][0]);
         return lines[i][0]; // TODO: return player display name
       }
     }
@@ -71,6 +73,10 @@ const gameboard = (() => {
     }
   }
 
+  const getSquareOpen = (square) => {
+    return gameboard[square] === '';
+  }
+
 
   return {
     gameboard, // for debugging, delete later
@@ -78,6 +84,7 @@ const gameboard = (() => {
     checkForWinner,
     startGame,
     resetGame,
+    getSquareOpen,
   };
 })();
 
@@ -98,6 +105,27 @@ const Player = (name, playerName) => {
     getName,
     getPlayerName,
   }; // public functions
+}
+
+const RandomAIPlayer = (name, playerName) => {
+  const {getName} = Player(name, playerName);
+  const {getPlayerName} = Player(name, playerName);
+  const playMove = () => {
+    let playedMove = false;
+    // pick randomly until a square is open, then play that.
+    while (!playedMove) {
+      square = Math.floor(Math.random()*9);
+      if (gameboard.getSquareOpen(square)) {
+        // play it
+        setTimeout(Player(name, playerName).playMove(square), 2000);
+      }
+    }
+  }
+  return {
+    playMove,
+    getName,
+    getPlayerName,
+  }
 }
 
 const game = (() => {
@@ -140,6 +168,7 @@ const game = (() => {
     console.log('Resetting the game');
     gameboard.resetGame();
     togglePlayButton('play');
+    playing = false;
   }
 
   const togglePlayButton = (changeTo) => {
@@ -175,9 +204,9 @@ const game = (() => {
         playing = false;
         endGame(outcome);
       }
-    }
-    if (playedMove) {
-      switchPlayer();
+      if (playedMove) {
+        switchPlayer();
+      }
     }
     
   }
