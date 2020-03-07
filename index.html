@@ -6,33 +6,53 @@
   </title>
 </head>
 <body>
+  <div id="container">
+    <div id="controls">
+      <div class="playerControls">
+        <div class="field">
+          <label for="player1">Player 1 (X)</label>
+          <input type="text" id="player1" value="Player 1" />
+        </div>
+        <div class="field">
+          <label for="player1AI">AI</label>
+          <input type="checkbox" id="player1AI" />
+        </div>
+      </div>
+      <div class="playerControls">
+        <div class="field">
+          <label for="player2">Player 2 (O)</label>
+          <input type="text" id="player2" value="Player 2" />
+        </div>
+        <div class="field">
+          <label for="player2AI">AI</label>
+          <input type="checkbox" id="player2AI" />
+        </div>
+      </div>
 
-  <div id="controls">
-    <label for="player1">Player 1 (X)</label>
-    <input type="text" id="player1" value="Player 1" />
-    <label for="player1AI">AI</label>
-    <input type="checkbox" id="player1AI" />
-    <label for="player2">Player 2 (O)</label>
-    <input type="text" id="player2" value="Player 2" />
-    <label for="player2AI">AI</label>
-    <input type="checkbox" id="player2AI" />
-
+    </div>
     <button id="playButton">Start</button>
-  </div>
 
-  <div id="gameboard">
-    <div id="0" class="gameCell newRow"></div>
-    <div id="1" class="gameCell"></div>
-    <div id="2" class="gameCell"></div>
-    <div id="3" class="gameCell newRow"></div>
-    <div id="4" class="gameCell"></div>
-    <div id="5" class="gameCell"></div>
-    <div id="6" class="gameCell newRow"></div>
-    <div id="7" class="gameCell"></div>
-    <div id="8" class="gameCell"></div>
+    <p>Current player: <span id="currentPlayer"></span></p>
+
+    <div id="gameboard">
+      <div class="gameRow">
+        <div id="0" class="gameCell newRow"></div>
+        <div id="1" class="gameCell"></div>
+        <div id="2" class="gameCell"></div>
+      </div>
+      <div class="gameRow">
+        <div id="3" class="gameCell newRow"></div>
+        <div id="4" class="gameCell"></div>
+        <div id="5" class="gameCell"></div>
+      </div>
+      <div class="gameRow">
+        <div id="6" class="gameCell newRow"></div>
+        <div id="7" class="gameCell"></div>
+        <div id="8" class="gameCell"></div>
+      </div>
+    </div>
+    <p id="message"></p>
   </div>
-  <p>Current player: <span id="currentPlayer"></span></p>
-  <p id="message"></p>
 
 </body>
 <script src="script.js"></script>

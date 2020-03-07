@@ -155,32 +155,43 @@ const game = (() => {
       player2name += ' (O)';
     }
     // create players
-    if (document.getElementById('player1AI').checked) {
-      x = RandomAIPlayer('X', player1name);
-    } else {
-      x = Player('X', player1name);
-    }
-    if (document.getElementById('player2AI').checked) {
-      o = RandomAIPlayer('O', player2name);
-    } else {
-      o = Player('O', player2name);
-    }
+    const player1type = document.getElementById('player1AI').checked ? 'randomAI' : 'person';
+    const player2type = document.getElementById('player2AI').checked ? 'randomAI' : 'person';
+    
+    x = createPlayer('X', player1name, player1type);
+    o = createPlayer('O', player2name, player2type);
     
     // who's first?
     currentPlayer = x;
-    currentPlayerNode.textContent = currentPlayer.getName();
+    currentPlayerNode.textContent = currentPlayer.getPlayerName();
 
     gameboard.startGame();
     togglePlayButton('reset');
     playing = true;
   }
 
+  const createPlayer = (mark, name, type) => {
+    let player;
+    switch(type) {
+      case 'person':
+        player = Player(mark, name);
+        console.log('Making a human player');
+        break;
+      case 'randomAI':
+        player = RandomAIPlayer(mark, name);
+        console.log('Making a random AI player');
+        break;
+    }
+    return player;
+  }
+
   const resetGame = () => {
     // cheater way: just refresh the page
     console.log('Resetting the game');
-    gameboard.resetGame();
-    togglePlayButton('play');
+    togglePlayButton('play'); // this isn't executing second time?
     playing = false;
+    gameboard.resetGame();
+    
   }
 
   const togglePlayButton = (changeTo) => {
@@ -200,7 +211,7 @@ const game = (() => {
     } else {
       currentPlayer = x;
     }
-    currentPlayerNode.textContent = currentPlayer.getName();
+    currentPlayerNode.textContent = currentPlayer.getPlayerName();
   }
 
   const playMove = (square) => {
