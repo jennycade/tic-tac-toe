@@ -155,9 +155,17 @@ const game = (() => {
       player2name += ' (O)';
     }
     // create players
-    x = Player('X', player1name);
-    // o = Player('O', player2name);
-    o = RandomAIPlayer('O', player2name);
+    if (document.getElementById('player1AI').checked) {
+      x = RandomAIPlayer('X', player1name);
+    } else {
+      x = Player('X', player1name);
+    }
+    if (document.getElementById('player2AI').checked) {
+      o = RandomAIPlayer('O', player2name);
+    } else {
+      o = Player('O', player2name);
+    }
+    
     // who's first?
     currentPlayer = x;
     currentPlayerNode.textContent = currentPlayer.getName();
@@ -179,7 +187,6 @@ const game = (() => {
     if (changeTo === 'reset') {
       playButton.textContent = 'Reset';
       playButton.addEventListener('click', resetGame);
-      // TODO: actually reset the game
     } else if (changeTo === 'play') {
       playButton.textContent = 'Play';
       playButton.addEventListener('click', startGame);
