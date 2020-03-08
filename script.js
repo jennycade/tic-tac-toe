@@ -1,7 +1,7 @@
 // GAMEBOARD
 
 const gameboard = (() => {
-  let gameboard = ['', '', '', '', '', '', '', '', ''];
+  let gameboard = ['_', '_', '_', '_', '_', '_', '_', '_', '_'];
 
   // tie it to the DOM
   let cells = [];
@@ -16,12 +16,12 @@ const gameboard = (() => {
   }
 
   const startGame = () => {
-    console.log('Starting game (gameboard).');
+    // console.log('Starting game (gameboard).');
     
   }
   const resetGame = () => {
-    console.log('Resetting game (gameboard)');
-    gameboard = ['', '', '', '', '', '', '', '', '']; // this is going through to render but not markSquare. I'm missing something about scope here.
+    // console.log('Resetting game (gameboard)');
+    gameboard = ['_', '_', '_', '_', '_', '_', '_', '_', '_']; // this is going through to render but not markSquare. I'm missing something about scope here.
     renderGameboard();
   }
 
@@ -33,9 +33,9 @@ const gameboard = (() => {
   }
 
   const markSquare = (player, square) => {
-    console.log(`Marking square ${square} (gameboard)`);
+    // console.log(`Marking square ${square} (gameboard)`);
     // check to make sure it's not already marked
-    if (gameboard[square] === '') {
+    if (getSquareOpen(square)) {
       gameboard[square] = player;
     } else {
       game.displayMessage('That space has already been played.');
@@ -46,8 +46,25 @@ const gameboard = (() => {
   }
 
   const checkForWinner = () => {
-    console.log('Checking for winner (gameboard)');
+    // console.log('Checking for winner (gameboard)');
     // TODO (maybe): also check for draw before board is filled
+    lines = getLines();
+    for (i=0; i<lines.length; i++) {
+      if (lines[i] === 'XXX' || lines[i] === 'OOO') {
+        // console.log('We have a winner!');
+        // console.log(lines[i][0]);
+        return lines[i][0]; // TODO: return player display name
+      }
+    }
+    if (gameboard.includes('_')) {
+      // game's not done yet
+      return false;
+    } else {
+      return 'draw';
+    }
+  }
+
+  const getLines = () => { // TODO replace blanks with _
     const lines = [
       gameboard[0] + gameboard[1] + gameboard[2],
       gameboard[0] + gameboard[4] + gameboard[8],
@@ -58,23 +75,11 @@ const gameboard = (() => {
       gameboard[1] + gameboard[4] + gameboard[7],
       gameboard[2] + gameboard[5] + gameboard[8],
     ];
-    for (i=0; i<lines.length; i++) {
-      if (lines[i] === 'XXX' || lines[i] === 'OOO') {
-        console.log('We have a winner!');
-        console.log(lines[i][0]);
-        return lines[i][0]; // TODO: return player display name
-      }
-    }
-    if (gameboard.join('').length < 9) {
-      // game's not done yet
-      return false;
-    } else {
-      return 'draw';
-    }
+    return lines;
   }
 
   const getSquareOpen = (square) => {
-    return gameboard[square] === '';
+    return gameboard[square] === '_';
   }
 
 
@@ -85,13 +90,14 @@ const gameboard = (() => {
     startGame,
     resetGame,
     getSquareOpen,
+    getLines,
   };
 })();
 
 const Player = (name, playerName) => {
   // functions go here
   const playMove = (square) => {
-    console.log('Playing move (player)');
+    // console.log('Playing move (player)');
     return gameboard.markSquare(name, square);
   }
   const getName = () => {
@@ -119,9 +125,95 @@ const RandomAIPlayer = (name, playerName) => {
       square = Math.floor(Math.random()*9);
       if (gameboard.getSquareOpen(square)) {
         // play it
-        playedMove = setTimeout(Player(name, playerName).playMove(square), 2000);
+        playedMove = Player(name, playerName).playMove(square)
+        // timeout only delays rendering the mark on the gameboard; not switching player or checking for winner.
+        // playedMove = setTimeout(() => {
+        //   return Player(name, playerName).playMove(square)
+        // }, 1000);
         return playedMove;
       }
+    }
+  }
+  return {
+    playMove,
+    getName,
+    getPlayerName,
+  }
+}
+
+const SmartAIPlayer = (name, playerName) => {
+  const {getName} = Player(name, playerName);
+  const {getPlayerName} = Player(name, playerName);
+
+  const getNextMoveWinPatterns = (mark) => {
+    return [
+      mark + mark + '_',
+      mark + '_' + mark,
+      '_' + mark + mark,
+    ];
+  }
+  const getSquare = (line, cell) => {
+    // This should be in gameboard, no?
+    const squareValues = {
+      0: [0, 1, 2],
+      1: [0, 4, 8],
+      2: [0, 3, 6],
+      3: [3, 4, 5],
+      4: [6, 4, 2],
+      5: [6, 7, 8],
+      6: [1, 4, 7],
+      7: [2, 5, 8],
+    };
+    return squareValues[line][cell];
+  }
+  const arraysAreEqual = (arr1, arr2) => {
+    // I know they're the same length and non-nested, so skipping those cases
+    for (let i=0; i<arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  const playMove = () => {
+    // get the lay of the land
+    const lines = gameboard.getLines();
+    let squareToPlay;
+
+    // 0. first move: choose corner
+    if (arraysAreEqual(lines, ['___','___','___','___','___','___','___','___'])) {
+      console.log('First move. Choose a corner.');
+      const corners = [0,2,6,8];
+      squareToPlay = corners[Math.floor(Math.random()*4)];
+    } else {
+      nextMoveWins = getNextMoveWinPatterns(name);
+      // 1. check for two of own mark + blank
+      for (let i=0; i<lines.length; i++) {
+        let line = lines[i];
+        if (nextMoveWins.includes(line)) {
+          console.log('AI found a way to win!');
+          // where's the blank?
+          const cell = line.search('_');
+          squareToPlay = getSquare(i, cell);
+          console.log('Playing square ' + squareToPlay);
+        }
+      }
+    }
+    
+
+    // 2. check for two of opponents' mark + blank
+
+    // 3. choose center if open
+
+
+    // 4. play randomly
+    if (!squareToPlay) {
+      console.log('No clear next move. Just play randomly.');
+      const playedMove = RandomAIPlayer(name, playerName).playMove();
+      return playedMove;
+    } else {
+      const playedMove = Player(name, playerName).playMove(squareToPlay);
+      return playedMove;
     }
   }
   return {
@@ -146,7 +238,7 @@ const game = (() => {
   const messageNode = document.getElementById('message');
   
   const startGame = () => {
-    console.log('Starting game (game).');
+    // console.log('Starting game (game).');
     // set names
     let player1name = document.getElementById('player1').value;
     let player2name = document.getElementById('player2').value;
@@ -175,19 +267,21 @@ const game = (() => {
     switch(type) {
       case 'person':
         player = Player(mark, name);
-        console.log('Making a human player');
+        // console.log('Making a human player');
         break;
       case 'randomAI':
-        player = RandomAIPlayer(mark, name);
-        console.log('Making a random AI player');
+        // player = RandomAIPlayer(mark, name);
+        player = SmartAIPlayer(mark, name);
+        // console.log('Making a random AI player');
         break;
+      
     }
     return player;
   }
 
   const resetGame = () => {
     // cheater way: just refresh the page
-    console.log('Resetting the game');
+    // console.log('Resetting the game');
     togglePlayButton('play'); // this isn't executing second time?
     playing = false;
     gameboard.resetGame();
@@ -205,7 +299,7 @@ const game = (() => {
   }
   
   const switchPlayer = () => {
-    console.log('Switching player (game)');
+    // console.log('Switching player (game)');
     if (currentPlayer === x) {
       currentPlayer = o;
     } else {
@@ -215,8 +309,8 @@ const game = (() => {
   }
 
   const playMove = (square) => {
-    console.log('Playing move (game)');
-    let playedMove;
+    // console.log('Playing move (game)');
+    let playedMove = false;
     displayMessage('');
     if (playing) {
       playedMove = currentPlayer.playMove(square);
