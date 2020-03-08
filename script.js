@@ -185,25 +185,41 @@ const SmartAIPlayer = (name, playerName) => {
       console.log('First move. Choose a corner.');
       const corners = [0,2,6,8];
       squareToPlay = corners[Math.floor(Math.random()*4)];
-    } else {
-      nextMoveWins = getNextMoveWinPatterns(name);
-      // 1. check for two of own mark + blank
-      for (let i=0; i<lines.length; i++) {
-        let line = lines[i];
-        if (nextMoveWins.includes(line)) {
-          console.log('AI found a way to win!');
-          // where's the blank?
-          const cell = line.search('_');
-          squareToPlay = getSquare(i, cell);
-          console.log('Playing square ' + squareToPlay);
-        }
+      return Player(name, playerName).playMove(squareToPlay);
+    }
+  
+    // 1. check for two of own mark + blank
+    const nextMoveWins = getNextMoveWinPatterns(name);
+    for (let i=0; i<lines.length; i++) {
+      let line = lines[i];
+      if (nextMoveWins.includes(line)) {
+        console.log('AI found a way to win!');
+        // where's the blank?
+        const cell = line.search('_');
+        squareToPlay = getSquare(i, cell)
+        return Player(name, playerName).playMove(squareToPlay);
+      }
+    }
+
+    // 2. check for two of opponents' mark + blank
+    const nextMoveOppWins = getNextMoveWinPatterns(name === 'X' ? 'O' : 'X');
+    for (let i=0; i<lines.length; i++) {
+      let line = lines[i];
+      if (nextMoveOppWins.includes(line)) {
+        console.log('AI can keep you from winning!');
+        // where's the blank?
+        const cell = line.search('_');
+        squareToPlay = getSquare(i, cell)
+        return Player(name, playerName).playMove(squareToPlay);
       }
     }
     
-
-    // 2. check for two of opponents' mark + blank
-
     // 3. choose center if open
+    if (gameboard.getSquareOpen(4)) {
+      console.log('The middle square is free, play that');
+      squareToPlay = 4;
+      return Player(name, playerName).playMove(squareToPlay);
+    }
 
 
     // 4. play randomly
@@ -290,9 +306,11 @@ const game = (() => {
 
   const togglePlayButton = (changeTo) => {
     if (changeTo === 'reset') {
+      playButton.removeEventListener('click', startGame);
       playButton.textContent = 'Reset';
       playButton.addEventListener('click', resetGame);
     } else if (changeTo === 'play') {
+      playButton.removeEventListener('click', resetGame);
       playButton.textContent = 'Play';
       playButton.addEventListener('click', startGame);
     }
