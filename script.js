@@ -182,7 +182,6 @@ const SmartAIPlayer = (name, playerName) => {
 
     // 0. first move: choose corner
     if (arraysAreEqual(lines, ['___','___','___','___','___','___','___','___'])) {
-      console.log('First move. Choose a corner.');
       const corners = [0,2,6,8];
       squareToPlay = corners[Math.floor(Math.random()*4)];
       return Player(name, playerName).playMove(squareToPlay);
@@ -193,7 +192,6 @@ const SmartAIPlayer = (name, playerName) => {
     for (let i=0; i<lines.length; i++) {
       let line = lines[i];
       if (nextMoveWins.includes(line)) {
-        console.log('AI found a way to win!');
         // where's the blank?
         const cell = line.search('_');
         squareToPlay = getSquare(i, cell)
@@ -206,7 +204,6 @@ const SmartAIPlayer = (name, playerName) => {
     for (let i=0; i<lines.length; i++) {
       let line = lines[i];
       if (nextMoveOppWins.includes(line)) {
-        console.log('AI can keep you from winning!');
         // where's the blank?
         const cell = line.search('_');
         squareToPlay = getSquare(i, cell)
@@ -216,7 +213,6 @@ const SmartAIPlayer = (name, playerName) => {
     
     // 3. choose center if open
     if (gameboard.getSquareOpen(4)) {
-      console.log('The middle square is free, play that');
       squareToPlay = 4;
       return Player(name, playerName).playMove(squareToPlay);
     }
@@ -224,8 +220,7 @@ const SmartAIPlayer = (name, playerName) => {
 
     // 4. play randomly
     if (!squareToPlay) {
-      console.log('No clear next move. Just play randomly.');
-      const playedMove = RandomAIPlayer(name, playerName).playMove();
+       const playedMove = RandomAIPlayer(name, playerName).playMove();
       return playedMove;
     } else {
       const playedMove = Player(name, playerName).playMove(squareToPlay);
@@ -262,12 +257,10 @@ const game = (() => {
       player1name += ' (X)';
       player2name += ' (O)';
     }
+
     // create players
-    const player1type = document.getElementById('player1AI').checked ? 'randomAI' : 'person';
-    const player2type = document.getElementById('player2AI').checked ? 'randomAI' : 'person';
-    
-    x = createPlayer('X', player1name, player1type);
-    o = createPlayer('O', player2name, player2type);
+    x = createPlayer('X', player1name, '1');
+    o = createPlayer('O', player2name, '2');
     
     // who's first?
     currentPlayer = x;
@@ -278,20 +271,28 @@ const game = (() => {
     playing = true;
   }
 
-  const createPlayer = (mark, name, type) => {
+  const createPlayer = (mark, name, number) => {
     let player;
-    switch(type) {
-      case 'person':
-        player = Player(mark, name);
-        // console.log('Making a human player');
-        break;
-      case 'randomAI':
-        // player = RandomAIPlayer(mark, name);
-        player = SmartAIPlayer(mark, name);
-        // console.log('Making a random AI player');
-        break;
-      
+    if (document.getElementById(`player${number}human`).checked) {
+      player = Player(mark, name);
+    } else if (document.getElementById(`player${number}randomAI`).checked) {
+      player = RandomAIPlayer(mark, name);
+    } else if (document.getElementById(`player${number}smartAI`).checked) {
+      player = SmartAIPlayer(mark, name);
     }
+    
+    // switch(type) {
+    //   case 'person':
+    //     player = Player(mark, name);
+    //     // console.log('Making a human player');
+    //     break;
+    //   case 'randomAI':
+    //     // player = RandomAIPlayer(mark, name);
+    //     player = SmartAIPlayer(mark, name);
+    //     // console.log('Making a random AI player');
+    //     break;
+      
+    // }
     return player;
   }
 
